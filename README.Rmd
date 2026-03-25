@@ -1,0 +1,33 @@
+---
+title: "README for R Assignment"
+author: "Nathan Kreuter"
+date: "2026-03-25"
+output: html_document
+---
+
+## Contents of this repository
+
+### data folder
+Input files:
+
+fang_et_al_genotypes
+
+snp_position
+
+### chromosome_data folder
+Output Excel files with SNPs ordered in either increasing or decreasing order for maize and teosinte:
+
+maize_increasing
+
+maize_decreasing
+
+teosinte_increasing
+
+teosinte_decreasing
+
+Within each Excel file, there is a sheet for each chromosome to maintain organization. However, individual data sets for each chromosome are generated via the R script.
+
+### R script and reviews
+The R script used is "R assignment md"
+
+The reviews used to improve the final submission are "Afrose_review" and "Bamrung_review" 

@@ -1,19 +1,20 @@
 ---
 title: "R Assignment - NK"
 author: "Nathan Kreuter"
-date: "2026-03-15"
+date: "2026-03-25"
 output:
   html_document:
     df_print: paged
 ---
-#Part 1
-##Data Inspection
+# Part 1
+## Data Inspection
 
 Clear environment, import data, and load libraries.
-```{r, echo=FALSE}
+```{r, results='hide'}
 library(dplyr)
 library(tidyr)
 library(ggplot2)
+library(openxlsx)
 rm(list = ls())
 fang <- read.delim("data/fang_et_al_genotypes.txt")
 snp <- read.delim("data/snp_position.txt")
@@ -46,7 +47,7 @@ summary(snp)
 summary(fang)
 ```
 
-#Data Processing
+# Data Processing
 
 Filter the fang dataset into one containing maize genotypes and teosinte genoytpes. Then transpose the filtered datasets separately.  
 ```{r, results='hide'}
@@ -76,6 +77,7 @@ fang_teosinte_clean$Position <- as.numeric(fang_teosinte_clean$Position)
 ```
 
 Sort by Chromosome and order based on Position, and replace missing data respectively.
+
 For maize in increasing order and replacing missing data with "?"
 ```{r, results='hide'}
 maize_inc_chr1 <- fang_maize_clean[fang_maize_clean$Chromosome == 1, ][order(fang_maize_clean[fang_maize_clean$Chromosome == 1, ]$Position), ]
@@ -83,7 +85,7 @@ maize_inc_chr1[,4:ncol(maize_inc_chr1)][maize_inc_chr1[,4:ncol(maize_inc_chr1)] 
 maize_inc_chr2 <- fang_maize_clean[fang_maize_clean$Chromosome == 2, ][order(fang_maize_clean[fang_maize_clean$Chromosome == 2, ]$Position), ]
 maize_inc_chr2[,4:ncol(maize_inc_chr2)][maize_inc_chr2[,4:ncol(maize_inc_chr2)] == "?/?"] <- "?"
 maize_inc_chr3 <- fang_maize_clean[fang_maize_clean$Chromosome == 3, ][order(fang_maize_clean[fang_maize_clean$Chromosome == 3, ]$Position), ]
-maize_inc_chr3[,4:ncol(maize_inc_chr1)][maize_inc_chr3[,4:ncol(maize_inc_chr3)] == "?/?"] <- "?"
+maize_inc_chr3[,4:ncol(maize_inc_chr3)][maize_inc_chr3[,4:ncol(maize_inc_chr3)] == "?/?"] <- "?"
 maize_inc_chr4 <- fang_maize_clean[fang_maize_clean$Chromosome == 4, ][order(fang_maize_clean[fang_maize_clean$Chromosome == 4, ]$Position), ]
 maize_inc_chr4[,4:ncol(maize_inc_chr4)][maize_inc_chr4[,4:ncol(maize_inc_chr4)] == "?/?"] <- "?"
 maize_inc_chr5 <- fang_maize_clean[fang_maize_clean$Chromosome == 5, ][order(fang_maize_clean[fang_maize_clean$Chromosome == 5, ]$Position), ]
@@ -172,10 +174,70 @@ teosinte_dec_chr10 <- fang_teosinte_clean[fang_teosinte_clean$Chromosome == 10, 
 teosinte_dec_chr10[,4:ncol(teosinte_dec_chr10)][teosinte_dec_chr10[,4:ncol(teosinte_dec_chr10)] == "?/?"] <- "-"
 ```
 
-#Part 2
-##Visualization
+Export the chromosome-specific datasets to Excel files with each chromosome in a separate sheet.
+```{r, results='hide'}
+dir.create("chromosome_data", showWarnings = FALSE)
 
-##SNPs per chromosome
+write.xlsx(
+  list(
+    chr1 = maize_inc_chr1,
+    chr2 = maize_inc_chr2,
+    chr3 = maize_inc_chr3,
+    chr4 = maize_inc_chr4,
+    chr5 = maize_inc_chr5,
+    chr6 = maize_inc_chr6,
+    chr7 = maize_inc_chr7,
+    chr8 = maize_inc_chr8,
+    chr9 = maize_inc_chr9,
+    chr10 = maize_inc_chr10),
+  file = "chromosome_data/maize_increasing.xlsx")
+
+write.xlsx(
+  list(
+    chr1 = maize_dec_chr1,
+    chr2 = maize_dec_chr2,
+    chr3 = maize_dec_chr3,
+    chr4 = maize_dec_chr4,
+    chr5 = maize_dec_chr5,
+    chr6 = maize_dec_chr6,
+    chr7 = maize_dec_chr7,
+    chr8 = maize_dec_chr8,
+    chr9 = maize_dec_chr9,
+    chr10 = maize_dec_chr10),
+  file = "chromosome_data/maize_decreasing.xlsx")
+
+write.xlsx(
+  list(
+    chr1 = teosinte_inc_chr1,
+    chr2 = teosinte_inc_chr2,
+    chr3 = teosinte_inc_chr3,
+    chr4 = teosinte_inc_chr4,
+    chr5 = teosinte_inc_chr5,
+    chr6 = teosinte_inc_chr6,
+    chr7 = teosinte_inc_chr7,
+    chr8 = teosinte_inc_chr8,
+    chr9 = teosinte_inc_chr9,
+    chr10 = teosinte_inc_chr10),
+  file = "chromosome_data/teosinte_increasing.xlsx")
+
+write.xlsx(
+  list(
+    chr1 = teosinte_dec_chr1,
+    chr2 = teosinte_dec_chr2,
+    chr3 = teosinte_dec_chr3,
+    chr4 = teosinte_dec_chr4,
+    chr5 = teosinte_dec_chr5,
+    chr6 = teosinte_dec_chr6,
+    chr7 = teosinte_dec_chr7,
+    chr8 = teosinte_dec_chr8,
+    chr9 = teosinte_dec_chr9,
+    chr10 = teosinte_dec_chr10),
+  file = "chromosome_data/teosinte_decreasing.xlsx")
+```
+# Part 2
+## Visualization
+
+## SNPs per chromosome
 
 Using the clean fang maize or teosinte files (used to sort by chromosome), remove the "Unknown" and "Missing" descriptors under the "Chromosome" column. Then, make Chromosome a factor with numeric order for proper plotting.
 ```{r, results='hide'}
@@ -186,7 +248,8 @@ snp_filtered <- snp_filtered %>%
   mutate(Chromosome = factor(Chromosome, levels = as.character(1:10)))
 ```
 
-Plot snp_filtered. This will show how each SNP_ID is positioned across the chromosomes.
+Plot snp_filtered. This will show how each SNP_ID is positioned across the chromosomes. However, this does not specifically show if there are more SNP positions in maize vs
+teosinte individuals.
 ```{r}
 ggplot(snp_filtered, aes(x = Position, y = factor(Chromosome))) +
   geom_point(alpha = 0.5, size = 1) +
@@ -196,7 +259,7 @@ ggplot(snp_filtered, aes(x = Position, y = factor(Chromosome))) +
   theme_minimal()
 ```
 
-##Missing data and amount of heterozygosity
+## Missing data and amount of heterozygosity
 To see if there are more SNP positions in maize or teosinte, start by converting the dataset from wide to long.
 ```{r, results='hide'}
 maize_long <- fang_maize_clean %>%
@@ -236,23 +299,26 @@ sample for each group, then across groups.
 ```{r}
 ggplot(maize_long, aes(x = Sample, fill = SiteType)) +
   geom_bar(position = "fill") +
-  ylab("Proportion") +
+  ylab("Proportion") + 
+  ggtitle("Maize site type proportions") +
   theme_bw() +
   theme(axis.text.x = element_text(angle = 90, hjust = 1))
 
 ggplot(teosinte_long, aes(x = Sample, fill = SiteType)) +
   geom_bar(position = "fill") +
   ylab("Proportion") +
+  ggtitle("Teosinte site type proportions") +
   theme_bw() +
   theme(axis.text.x = element_text(angle = 90, hjust = 1))
 
 ggplot(combined_long, aes(x = Group, fill = SiteType)) +
   geom_bar(position = "fill") +
   ylab("Proportion") +
+  ggtitle("Site type proportions by group") +
   theme_bw()
 ```
 
-##Your own visualization
+## Your own visualization
 
 The aim is to make a graph showing if individuals across groups are more/less genetically diverse. First, create a new data frame (by using the previously made combined_long data frame) with columns "Group," "Sample," and "Heterozygosity." For each sample, Heterozygosity is calculated as the proportion of heterozygous sites, using mean(SiteType == "Heterozygous"), where TRUE corresponds to a site being heterozygous."
 ```{r, results='hide'}
